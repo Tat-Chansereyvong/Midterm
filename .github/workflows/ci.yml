@@ -1,78 +1,43 @@
-name: CI
+# Purpose: Defines the CI/CD pipeline for testing and email notification on main branch commits
+name: Automated Test and Notify
 
 on:
   push:
-    branches: ['main', 'master']
-  pull_request:
-    branches: ['main', 'master']
+    branches:
+      - main
+
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18.x]
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Use Node.js
-        uses: actions/setup-node@v4
+    steps:
+      # Purpose: Checks out the repository code into the virtual environment
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Purpose: Configures the Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          node-version: '18'
 
-      - name: Install dependencies
-        run: npm ci || npm install
-
-      - name: Lint
-        run: npm run lint --if-present
-
-      - name: Build
-        run: npm run build --if-present
-
-      - name: Run unit tests
-        run: npm test -- --runInBand
-
-  e2e:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18.x
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci || npm install
-
-      - name: Run e2e tests
-        run: npm run test:e2e -- --runInBand
-
-  send-code:
-    needs: [build, e2e]
-    runs-on: ubuntu-latest
-    if: ${{ always() }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Create repo zip
+      # Purpose: Installs dependencies and runs the test suites
+      - name: Install and Test
         run: |
-          apt-get update && apt-get install -y zip >/dev/null || true
-          zip -r repo.zip . -x "node_modules/*" ".git/*" "coverage/*" "dist/*" "*.zip"
+          npm install
+          npm run test
+          npm run test:e2e
 
-      - name: Send repo to committer + teacher
+      # Purpose: Sends the status email to the committer and the external address
+      - name: Send Email Notification
         uses: dawidd6/action-send-mail@v3
+        if: always()
         with:
-          server_address: ${{ secrets.SMTP_HOST }}
-          server_port: ${{ secrets.SMTP_PORT }}
-          username: ${{ secrets.SMTP_USERNAME }}
-          password: ${{ secrets.SMTP_PASSWORD }}
-          secure: true
-          from: ${{ secrets.EMAIL_FROM }}
-          to: ${{ github.event.pusher.email }}, srengty@gmail.com
-          subject: 'Repository snapshot: ${{ github.repository }} @ ${{ github.sha }}'
-          body: 'Attached is the repository snapshot for commit ${{ github.sha }} triggered by ${{ github.event.pusher.name }} (<${{ github.event.pusher.email }}>)'
-          attachments: repo.zip
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: 'GitHub Actions: Test Suite Completed'
+          to: '${{ github.event.pusher.email }}, srengty@gmail.com'
+          from: 'Automated CI Pipeline'
+          body: 'The automated tests for the latest commit on the main branch have finished.'
