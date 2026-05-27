@@ -73,6 +73,6 @@ jobs:
           secure: true
           from: ${{ secrets.EMAIL_FROM }}
           to: ${{ github.event.pusher.email }}, srengty@gmail.com
-          subject: "Repository snapshot: ${{ github.repository }} @ ${{ github.sha }}"
-          body: "Attached is the repository snapshot for commit ${{ github.sha }} triggered by ${{ github.event.pusher.name }} (<${{ github.event.pusher.email }}>)"
+          subject: 'Repository snapshot: ${{ github.repository }} @ ${{ github.sha }}'
+          body: 'Attached is the repository snapshot for commit ${{ github.sha }} triggered by ${{ github.event.pusher.name }} (<${{ github.event.pusher.email }}>)'
           attachments: repo.zip
