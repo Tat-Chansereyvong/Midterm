@@ -1,3 +1,4 @@
+# Purpose: Core CI configuration tracking frontend changes to run Vitest safely by excluding browser-based Playwright structures
 name: CI - Frontend
 
 on:
@@ -40,13 +41,9 @@ jobs:
       - name: Run lint
         run: npm run lint --if-present
 
+      # ── FIXED: Force Vitest to ignore the Playwright folder directly via CLI flags ──
       - name: Run unit tests
-        run: |
-          if [ -d "tests/unit" ]; then
-            npx vitest run tests/unit
-          else
-            echo "No unit tests directory found; skipping unit tests"
-          fi
+        run: npx vitest run --exclude="**/tests/playwright/**" --passWithNoTests
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
@@ -54,6 +51,7 @@ jobs:
       - name: Run e2e tests
         run: npm run test:e2e --if-present
 
+      # ── Notify on success ───────────────────────────────────────────────────
       - name: Send success email
         if: success()
         uses: dawidd6/action-send-mail@v3
@@ -77,6 +75,7 @@ jobs:
 
             View run   : ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
+      # ── Notify on failure ───────────────────────────────────────────────────
       - name: Send failure email
         if: failure()
         uses: dawidd6/action-send-mail@v3
