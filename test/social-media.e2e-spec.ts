@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
@@ -218,6 +219,8 @@ describe('Social Media API (e2e)', () => {
   });
 
   it('returns not found for deleted comment', async () => {
-    await request(app.getHttpServer()).get(`/comments/${createdCommentId}`).expect(404);
+    await request(app.getHttpServer())
+      .get(`/comments/${createdCommentId}`)
+      .expect(404);
   });
 });

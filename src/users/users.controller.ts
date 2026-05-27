@@ -16,7 +16,10 @@ export class UsersController {
   }
 
   @Patch('me')
-  updateMyProfile(@CurrentUser() user: JwtPayload, @Body() dto: UpdateProfileDto) {
+  updateMyProfile(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: UpdateProfileDto,
+  ) {
     return this.usersService.updateProfile(user.sub, dto.bio);
   }
 }

@@ -12,17 +12,28 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async register(dto: RegisterDto): Promise<{ accessToken: string; user: PublicUser }> {
-    const user = await this.usersService.create(dto.username, dto.email, dto.password);
+  async register(
+    dto: RegisterDto,
+  ): Promise<{ accessToken: string; user: PublicUser }> {
+    const user = await this.usersService.create(
+      dto.username,
+      dto.email,
+      dto.password,
+    );
     return this.issueToken(user);
   }
 
-  async login(dto: LoginDto): Promise<{ accessToken: string; user: PublicUser }> {
+  async login(
+    dto: LoginDto,
+  ): Promise<{ accessToken: string; user: PublicUser }> {
     const user = await this.usersService.validateUser(dto.email, dto.password);
     return this.issueToken(user);
   }
 
-  private issueToken(user: PublicUser): { accessToken: string; user: PublicUser } {
+  private issueToken(user: PublicUser): {
+    accessToken: string;
+    user: PublicUser;
+  } {
     const accessToken = this.jwtService.sign({
       sub: user.id,
       username: user.username,

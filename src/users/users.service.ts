@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { UserEntity, PublicUser } from './entities/user.entity';
 
@@ -7,7 +11,11 @@ export class UsersService {
   private users: UserEntity[] = [];
   private nextId = 1;
 
-  async create(username: string, email: string, password: string): Promise<PublicUser> {
+  async create(
+    username: string,
+    email: string,
+    password: string,
+  ): Promise<PublicUser> {
     const normalizedEmail = email.toLowerCase().trim();
 
     if (this.users.some((user) => user.email === normalizedEmail)) {
@@ -74,7 +82,13 @@ export class UsersService {
   }
 
   private toPublicUser(user: UserEntity): PublicUser {
-    const { passwordHash: _passwordHash, ...publicUser } = user;
-    return publicUser;
+    return {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      bio: user.bio,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 }
