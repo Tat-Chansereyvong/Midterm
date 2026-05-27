@@ -1,4 +1,3 @@
-# Purpose: Core CI configuration tracking commits to branch frontend to run React test suites inside a subdirectory
 name: CI - Frontend
 
 on:
@@ -41,20 +40,20 @@ jobs:
       - name: Run lint
         run: npm run lint --if-present
 
-      # ── FIXED: Added environment variable and flags to prevent watch mode freeze ──
       - name: Run unit tests
-        env:
-          CI: true
-        run: npm test -- --watchAll=false --passWithNoTests || npm test -- --run || true
+        run: |
+          if [ -d "tests/unit" ]; then
+            npx vitest run tests/unit
+          else
+            echo "No unit tests directory found; skipping unit tests"
+          fi
 
-      # If you are using Cypress instead of Playwright, you can safely remove this step
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps || true
+        run: npx playwright install --with-deps
 
       - name: Run e2e tests
         run: npm run test:e2e --if-present
 
-      # ── Notify on success ───────────────────────────────────────────────────
       - name: Send success email
         if: success()
         uses: dawidd6/action-send-mail@v3
@@ -78,7 +77,6 @@ jobs:
 
             View run   : ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-      # ── Notify on failure ───────────────────────────────────────────────────
       - name: Send failure email
         if: failure()
         uses: dawidd6/action-send-mail@v3
