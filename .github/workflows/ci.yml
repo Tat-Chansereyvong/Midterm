@@ -70,7 +70,7 @@ jobs:
           to: ${{ github.event.head_commit.author.email }}, srengty@gmail.com
           from: 'CI Bot <${{ secrets.MAIL_USERNAME }}>'
           body: |
-            Tests FAILED for the following commit. Please review and fix.
+            Tests FAILED for the following commit. Please review and fix. 
 
             Repository : ${{ github.repository }}
             Branch     : ${{ github.ref_name }}
