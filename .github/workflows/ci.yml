@@ -2,12 +2,15 @@ name: CI - Automated Tests
 
 on:
   push:
-    branches: [main]
+    branches: [master]
 
 jobs:
   test:
     name: Run test suites
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: social-media-api
 
     steps:
       - name: Checkout repository
@@ -18,18 +21,18 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: social-media/package-lock.json
+          cache-dependency-path: social-media-api/package-lock.json
 
       - name: Install dependencies
-        working-directory: social-media
         run: npm ci
 
+      - name: Run lint
+        run: npm run lint --if-present
+
       - name: Run unit & integration tests
-        working-directory: social-media
         run: npm test -- --forceExit --ci
 
       - name: Run e2e tests
-        working-directory: social-media
         run: npm run test:e2e -- --forceExit --ci
 
       # ── Notify on success ───────────────────────────────────────────────────
