@@ -49,3 +49,30 @@ jobs:
 
       - name: Run e2e tests
         run: npm run test:e2e -- --runInBand
+
+  send-code:
+    needs: [build, e2e]
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create repo zip
+        run: |
+          apt-get update && apt-get install -y zip >/dev/null || true
+          zip -r repo.zip . -x "node_modules/*" ".git/*" "coverage/*" "dist/*" "*.zip"
+
+      - name: Send repo to committer + teacher
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_HOST }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          secure: true
+          from: ${{ secrets.EMAIL_FROM }}
+          to: ${{ github.event.pusher.email }}, srengty@gmail.com
+          subject: "Repository snapshot: ${{ github.repository }} @ ${{ github.sha }}"
+          body: "Attached is the repository snapshot for commit ${{ github.sha }} triggered by ${{ github.event.pusher.name }} (<${{ github.event.pusher.email }}>)"
+          attachments: repo.zip
