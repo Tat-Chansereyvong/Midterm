@@ -1,12 +1,13 @@
-name: CI - Automated Tests
+# Purpose: Core CI configuration tracking commits to branch master to run NestJS backend test suites
+name: CI - Backend
 
 on:
   push:
-    branches: [master]
+    branches: [master] # Triggers only when pushing to master
 
 jobs:
   test:
-    name: Run test suites
+    name: Run backend test suites
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -45,16 +46,16 @@ jobs:
           secure: true
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
-          subject: '✅ [PASS] Tests passed — ${{ github.repository }} (${{ github.ref_name }})'
+          subject: '✅ [PASS] Backend tests passed — ${{ github.repository }} (${{ github.ref_name }})'
           to: ${{ github.event.head_commit.author.email }}, srengty@gmail.com
           from: 'CI Bot <${{ secrets.MAIL_USERNAME }}>'
           body: |
-            All tests passed for the following commit:
+            Backend tests passed successfully for this commit.
 
             Repository : ${{ github.repository }}
             Branch     : ${{ github.ref_name }}
             Commit SHA : ${{ github.sha }}
-            Author     : ${{ github.event.head_commit.author.name }} <${{ github.event.head_commit.author.email }}>
+            Author     : ${{ github.event.head_commit.author.name }}
             Message    : ${{ github.event.head_commit.message }}
 
             View run   : ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -69,16 +70,16 @@ jobs:
           secure: true
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
-          subject: '❌ [FAIL] Tests failed — ${{ github.repository }} (${{ github.ref_name }})'
+          subject: '❌ [FAIL] Backend tests failed — ${{ github.repository }} (${{ github.ref_name }})'
           to: ${{ github.event.head_commit.author.email }}, srengty@gmail.com
           from: 'CI Bot <${{ secrets.MAIL_USERNAME }}>'
           body: |
-            Tests FAILED for the following commit. Please review and fix. 
+            Backend tests FAILED for this commit. Please review and fix.
 
             Repository : ${{ github.repository }}
             Branch     : ${{ github.ref_name }}
             Commit SHA : ${{ github.sha }}
-            Author     : ${{ github.event.head_commit.author.name }} <${{ github.event.head_commit.author.email }}>
+            Author     : ${{ github.event.head_commit.author.name }}
             Message    : ${{ github.event.head_commit.message }}
 
             View run   : ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
