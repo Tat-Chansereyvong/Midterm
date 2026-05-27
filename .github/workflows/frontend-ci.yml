@@ -1,9 +1,13 @@
-# Purpose: Core CI configuration tracking commits to branch frontend to run React test suites inside a subdirectory
 name: CI - Frontend
 
 on:
   push:
-    branches: [frontend] # This must match your exact branch name online
+    paths:
+      - 'frontend/**'
+  pull_request:
+    paths:
+      - 'frontend/**'
+  workflow_dispatch: {}
 
 jobs:
   test:
@@ -11,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: frontend # Tells GitHub to jump into your frontend folder for commands
+        working-directory: frontend
 
     steps:
       - name: Checkout repository
@@ -20,12 +24,18 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json # Points directly to your lockfile path
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Format code with Prettier
+        run: npx prettier --write "src/**/*.{ts,tsx,css,html,js,jsx}" || true
+
+      - name: Check Prettier formatting
+        run: npx prettier --check "src/**/*.{ts,tsx,css,html,js,jsx}"
 
       - name: Run lint
         run: npm run lint --if-present
@@ -33,10 +43,12 @@ jobs:
       - name: Run unit tests
         run: npm test --if-present
 
-      - name: Run E2E tests (Cypress)
-        run: npx cypress run --if-present
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
 
-      # ── Notify on success ───────────────────────────────────────────────────
+      - name: Run e2e tests
+        run: npm run test:e2e --if-present
+
       - name: Send success email
         if: success()
         uses: dawidd6/action-send-mail@v3
@@ -46,21 +58,20 @@ jobs:
           secure: true
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "✅ [PASS] Frontend tests passed — ${{ github.repository }} (${{ github.ref_name }})"
+          subject: '✅ [PASS] Frontend tests passed — ${{ github.repository }} (${{ github.ref_name }})'
           to: ${{ github.event.head_commit.author.email }}, srengty@gmail.com
-          from: "CI Bot <${{ secrets.MAIL_USERNAME }}>"
+          from: 'CI Bot <${{ secrets.MAIL_USERNAME }}>'
           body: |
-            Frontend tests passed successfully for this commit.
+            Frontend tests passed for the following commit:
 
             Repository : ${{ github.repository }}
             Branch     : ${{ github.ref_name }}
             Commit SHA : ${{ github.sha }}
-            Author     : ${{ github.event.head_commit.author.name }}
+            Author     : ${{ github.event.head_commit.author.name }} <${{ github.event.head_commit.author.email }}>
             Message    : ${{ github.event.head_commit.message }}
 
             View run   : ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-      # ── Notify on failure ───────────────────────────────────────────────────
       - name: Send failure email
         if: failure()
         uses: dawidd6/action-send-mail@v3
@@ -70,16 +81,16 @@ jobs:
           secure: true
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "❌ [FAIL] Frontend tests failed — ${{ github.repository }} (${{ github.ref_name }})"
+          subject: '❌ [FAIL] Frontend tests failed — ${{ github.repository }} (${{ github.ref_name }})'
           to: ${{ github.event.head_commit.author.email }}, srengty@gmail.com
-          from: "CI Bot <${{ secrets.MAIL_USERNAME }}>"
+          from: 'CI Bot <${{ secrets.MAIL_USERNAME }}>'
           body: |
-            Frontend tests FAILED for this commit. Please review and fix.
+            Frontend tests FAILED for the following commit. Please review and fix.
 
             Repository : ${{ github.repository }}
             Branch     : ${{ github.ref_name }}
             Commit SHA : ${{ github.sha }}
-            Author     : ${{ github.event.head_commit.author.name }}
+            Author     : ${{ github.event.head_commit.author.name }} <${{ github.event.head_commit.author.email }}>
             Message    : ${{ github.event.head_commit.message }}
 
             View run   : ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
