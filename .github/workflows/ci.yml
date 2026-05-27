@@ -3,15 +3,12 @@ name: CI - Backend
 
 on:
   push:
-    branches: [master] # Triggers only when pushing to master
+    branches: [master]
 
 jobs:
   test:
     name: Run backend test suites
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: social-media-api
 
     steps:
       - name: Checkout repository
@@ -22,7 +19,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: social-media-api/package-lock.json
+          cache-dependency-path: package-lock.json # Looks directly at the root of the master branch
 
       - name: Install dependencies
         run: npm ci
