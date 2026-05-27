@@ -12,7 +12,12 @@ test("profile update flow", async ({ page }) => {
       route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({ id: "u1", username: "first_user", email: "first@example.com", bio: "" }),
+        body: JSON.stringify({
+          id: "u1",
+          username: "first_user",
+          email: "first@example.com",
+          bio: "",
+        }),
       });
       return;
     }
@@ -20,7 +25,12 @@ test("profile update flow", async ({ page }) => {
       route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({ id: "u1", username: "first_user", email: "first@example.com", bio: "I build APIs" }),
+        body: JSON.stringify({
+          id: "u1",
+          username: "first_user",
+          email: "first@example.com",
+          bio: "I build APIs",
+        }),
       });
       return;
     }
@@ -29,12 +39,16 @@ test("profile update flow", async ({ page }) => {
 
   // navigate via UI so client-side routing + init scripts take effect
   await page.goto("/");
-  await page.click('text=Profile');
-  await page.waitForSelector('#bio', { timeout: 5000 });
+  await page.click("text=Profile");
+  await page.waitForSelector("#bio", { timeout: 5000 });
   await page.fill("#bio", "I build APIs");
   await Promise.all([
-    page.waitForResponse((resp) => resp.url().includes('/users/me') && resp.request().method().toLowerCase() === 'patch'),
+    page.waitForResponse(
+      (resp) =>
+        resp.url().includes("/users/me") &&
+        resp.request().method().toLowerCase() === "patch",
+    ),
     page.click('button:has-text("Save changes")'),
   ]);
-  await expect(page.getByRole('status')).toContainText("Profile updated");
+  await expect(page.getByRole("status")).toContainText("Profile updated");
 });

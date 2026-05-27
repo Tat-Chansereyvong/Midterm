@@ -31,7 +31,11 @@ test("comments create -> edit -> delete flow", async ({ page }) => {
       route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({ id: "c1", postId: "post-1", content: "Edited comment" }),
+        body: JSON.stringify({
+          id: "c1",
+          postId: "post-1",
+          content: "Edited comment",
+        }),
       });
       return;
     }
@@ -53,14 +57,22 @@ test("comments create -> edit -> delete flow", async ({ page }) => {
   // edit: accept prompt with new value and wait for PATCH response
   page.once("dialog", async (dialog) => dialog.accept("Edited comment"));
   await Promise.all([
-    page.waitForResponse((resp) => resp.url().includes('/comments/') && resp.request().method().toLowerCase() === 'patch'),
+    page.waitForResponse(
+      (resp) =>
+        resp.url().includes("/comments/") &&
+        resp.request().method().toLowerCase() === "patch",
+    ),
     page.click('button:has-text("Edit")'),
   ]);
   await expect(page.locator("text=Edited comment")).toBeVisible();
 
   // delete
   await Promise.all([
-    page.waitForResponse((resp) => resp.url().includes('/comments/') && resp.request().method().toLowerCase() === 'delete'),
+    page.waitForResponse(
+      (resp) =>
+        resp.url().includes("/comments/") &&
+        resp.request().method().toLowerCase() === "delete",
+    ),
     page.click('button:has-text("Delete")'),
   ]);
   await expect(page.locator("text=Edited comment")).not.toBeVisible();
